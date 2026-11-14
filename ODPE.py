@@ -7,16 +7,16 @@ st.set_page_config(
     page_title="Dashboard de Avances: Contratos de planta", layout="wide"
 )
 
-# Estilos CSS personalizados para agrandar barras, mejorar fuentes y aplicar fondo blanco/azul
+# Estilos CSS avanzados para hacer las barras gigantes, visibles y con diseño corporativo
 st.markdown(
     """
     <style>
-    /* Fondo general de la aplicación limpio */
+    /* Fondo general limpio */
     .stApp {
         background-color: #F4F7FB;
     }
     
-    /* Encabezado principal corporativo */
+    /* Encabezado principal */
     .header-box {
         background: linear-gradient(135deg, #0B2545 0%, #134074 100%);
         padding: 22px;
@@ -26,16 +26,17 @@ st.markdown(
         box-shadow: 0px 4px 10px rgba(11, 37, 69, 0.15);
     }
     
-    /* Agrandar las barras de progreso de Streamlit */
+    /* HACER LAS BARRAS DE PROGRESO GIGANTES Y MUY CLARAS */
     .stProgress > div > div > div > div {
-        background-color: #0096FF;
-        height: 18px !important;
-        border-radius: 10px;
+        background: linear-gradient(90deg, #0066CC 0%, #0096FF 100%);
+        height: 28px !important;
+        border-radius: 14px;
     }
     .stProgress > div > div > div {
-        height: 18px !important;
-        border-radius: 10px;
+        height: 28px !important;
+        border-radius: 14px;
         background-color: #E2E8F0;
+        box-shadow: inset 0px 2px 4px rgba(0,0,0,0.06);
     }
 
     /* Estilo para los nombres de las ODPE */
@@ -43,15 +44,15 @@ st.markdown(
         font-size: 16px;
         font-weight: 700;
         color: #0B2545;
-        margin-bottom: 4px;
-        margin-top: 15px;
+        margin-bottom: 2px;
+        margin-top: 18px;
     }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# Ruta del archivo Excel (Funciona localmente y en GitHub)
+# Ruta del archivo Excel
 archivo_excel = "avance.xlsx"
 
 if not os.path.exists(archivo_excel):
@@ -64,7 +65,7 @@ if not os.path.exists(archivo_excel):
 # Cargar el archivo Excel
 df = pd.read_excel(archivo_excel)
 
-# Limpiar los nombres de las columnas (eliminar espacios y guiones sobrantes)
+# Limpiar los nombres de las columnas
 df.columns = (
     df.columns.str.replace("-", "", regex=True)
     .str.strip()
@@ -72,7 +73,6 @@ df.columns = (
 )
 
 
-# Función flexible para encontrar las columnas clave
 def encontrar_columna(posibles_nombres):
   for col in df.columns:
     for nombre in posibles_nombres:
@@ -93,7 +93,6 @@ if not col_odpe or not col_subidos or not col_meta:
   st.write("Columnas detectadas en tu archivo:", df.columns.tolist())
   st.stop()
 
-# Renombrar estandarizadamente
 df = df.rename(
     columns={
         col_odpe: "ODPE",
@@ -129,7 +128,7 @@ odpes_pendientes = len(df[df["AVANCE_CALC"] < 1])
 # Ordenar de mayor a menor según el porcentaje de avance
 df = df.sort_values(by="AVANCE_CALC", ascending=False).reset_index(drop=True)
 
-# Diseño de dos columnas (Izquierda: Barras de avance grandes | Derecha: Resumen global)
+# Diseño de dos columnas
 col_izq, col_der = st.columns([2, 1], gap="large")
 
 with col_izq:
@@ -143,16 +142,18 @@ with col_izq:
     odpe_nombre = row["ODPE"]
     subidos = row["SUBIDOS"]
     meta = row["META"]
-    porcentaje = row["AVANCE_CALC"]
-    if porcentaje > 1:
-      porcentaje = 1  # Tope visual en 100%
+    porcentaje_calc = row["AVANCE_CALC"]
+    
+    porcentaje_visual = porcentaje_calc
+    if porcentaje_visual > 1:
+      porcentaje_visual = 1
 
-    texto_etiqueta = (
-        f"{int(row['AVANCE_CALC']*100)}% (Subidos {int(subidos)}/{int(meta)})"
-    )
+    # Texto claro y destacado para cada barra
+    porcentaje_texto = int(porcentaje_calc * 100)
+    texto_etiqueta = f"{porcentaje_texto}% completado  —  ({int(subidos)} de {int(meta)} subidos)"
 
     st.markdown(f'<div class="odpe-label">{odpe_nombre}</div>', unsafe_allow_html=True)
-    st.progress(float(porcentaje), text=texto_etiqueta)
+    st.progress(float(porcentaje_visual), text=texto_etiqueta)
 
 with col_der:
   st.markdown(
@@ -164,7 +165,7 @@ with col_der:
   # Tarjeta 1: Avance Global
   st.markdown(
       f"""
-        <div style="background-color: white; padding: 18px; border-radius: 12px; border-left: 6px solid #0096FF; box-shadow: 0px 3px 8px rgba(0,0,0,0.06); margin-bottom: 18px;">
+        <div style="background-color: white; padding: 18px; border-radius: 12px; border-left: 6px solid #0066CC; box-shadow: 0px 3px 8px rgba(0,0,0,0.06); margin-bottom: 18px;">
             <p style="margin: 0; font-size: 13px; color: #64748B; font-weight: bold;">AVANCE GLOBAL:</p>
             <p style="margin: 5px 0 0 0; font-size: 28px; font-weight: 800; color: #0B2545;">{avance_global:.1%}</p>
             <p style="margin: 3px 0 0 0; font-size: 14px; color: #475569;">{int(total_subidos)} subidos / {int(total_meta)} meta</p>
