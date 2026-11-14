@@ -7,32 +7,22 @@ st.set_page_config(
     page_title="Dashboard de Avances: Contratos de planta", layout="wide"
 )
 
-# Estilos CSS para compactar al máximo la vista y eliminar espacios innecesarios
+# Estilos CSS compactos
 st.markdown(
     """
-    <style>
-    /* Fondo general limpio */
-    .stApp {
-        background-color: #F4F7FB;
-    }
-    
-    /* Reducir márgenes globales y padding para ganar espacio vertical */
-    .block-container {
-        padding-top: 1.5rem;
-        padding-bottom: 1rem;
-    }
-    
-    /* Encabezado principal más compacto */
-    .header-box {
-        background: linear-gradient(135deg, #0B2545 0%, #134074 100%);
-        padding: 14px 20px;
-        border-radius: 10px;
-        color: white;
-        margin-bottom: 15px;
-        box-shadow: 0px 3px 8px rgba(11, 37, 69, 0.15);
-    }
-    </style>
-    """,
+<style>
+.stApp { background-color: #F4F7FB; }
+.block-container { padding-top: 1.5rem; padding-bottom: 1rem; }
+.header-box {
+    background: linear-gradient(135deg, #0B2545 0%, #134074 100%);
+    padding: 14px 20px;
+    border-radius: 10px;
+    color: white;
+    margin-bottom: 15px;
+    box-shadow: 0px 3px 8px rgba(11, 37, 69, 0.15);
+}
+</style>
+""",
     unsafe_allow_html=True,
 )
 
@@ -92,10 +82,10 @@ if "COMENTARIO" not in df.columns:
 # Encabezado principal visual
 st.markdown(
     """
-    <div class="header-box">
-        <h1 style="margin: 0; font-size: 22px; font-weight: 700;">📊 Dashboard de Avances: Contratos de Planta</h1>
-    </div>
-    """,
+<div class="header-box">
+    <h1 style="margin: 0; font-size: 22px; font-weight: 700;">📊 Dashboard de Avances: Contratos de Planta</h1>
+</div>
+""",
     unsafe_allow_html=True,
 )
 
@@ -121,12 +111,7 @@ with col_izq:
       unsafe_allow_html=True,
   )
 
-  # Contenedor ultra compacto para todas las ODPE en formato lista limpia
-  html_lista_odpes = """
-    <div style="background: white; padding: 10px 14px; border-radius: 10px; box-shadow: 0px 2px 5px rgba(0,0,0,0.05);">
-    <table style="width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 13px;">
-    """
-
+  filas_html = ""
   for index, row in df.iterrows():
     odpe_nombre = row["ODPE"]
     subidos = int(row["SUBIDOS"])
@@ -140,20 +125,28 @@ with col_izq:
     porcentaje_texto = int(porcentaje_calc * 100)
     color_barra = "#10B981" if porcentaje_calc >= 1 else "#0066CC"
 
-    html_lista_odpes += f"""
-        <tr style="border-bottom: 1px solid #F1F5F9;">
-            <td style="padding: 6px 4px; font-weight: 700; color: #0B2545; width: 30%;">{odpe_nombre}</td>
-            <td style="padding: 6px 4px; width: 50%;">
-                <div style="background-color: #E2E8F0; width: 100%; height: 12px; border-radius: 6px; overflow: hidden;">
-                    <div style="background-color: {color_barra}; width: {porcentaje_barra}%; height: 100%; border-radius: 6px;"></div>
-                </div>
-            </td>
-            <td style="padding: 6px 4px; text-align: right; font-weight: 600; color: #334155; width: 20%;">{porcentaje_texto}% ({subidos}/{meta})</td>
-        </tr>
-        """
+    filas_html += (
+        f'<tr style="border-bottom: 1px solid #F1F5F9;">'
+        f'<td style="padding: 5px 4px; font-weight: 700; color: #0B2545;'
+        f' width: 30%;">{odpe_nombre}</td>'
+        f'<td style="padding: 5px 4px; width: 50%;">'
+        f'<div style="background-color: #E2E8F0; width: 100%; height: 12px;'
+        f' border-radius: 6px; overflow: hidden;">'
+        f'<div style="background-color: {color_barra}; width:'
+        f' {porcentaje_barra}%; height: 100%; border-radius: 6px;"></div>'
+        f"</div></td>"
+        f'<td style="padding: 5px 4px; text-align: right; font-weight: 600;'
+        f' color: #334155; width: 20%;">{porcentaje_texto}% ({subidos}/{meta})</td>'
+        f"</tr>"
+    )
 
-  html_lista_odpes += "</table></div>"
-  st.markdown(html_lista_odpes, unsafe_allow_html=True)
+  html_tabla = (
+      '<div style="background: white; padding: 10px 14px; border-radius: 10px;'
+      f' box-shadow: 0px 2px 5px rgba(0,0,0,0.05);"><table style="width: 100%;'
+      ' border-collapse: collapse; font-family: sans-serif; font-size:'
+      f' 13px;">{filas_html}</table></div>'
+  )
+  st.markdown(html_tabla, unsafe_allow_html=True)
 
 with col_der:
   st.markdown(
@@ -162,28 +155,9 @@ with col_der:
       unsafe_allow_html=True,
   )
 
-  # Tarjetas de resumen compacto (en filas de 3 columnas pequeñas o tarjetas estilizadas)
-  st.markdown(
-      f"""
-        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-            <div style="flex: 1; background-color: white; padding: 10px; border-radius: 8px; border-left: 4px solid #0066CC; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);">
-                <p style="margin: 0; font-size: 11px; color: #64748B; font-weight: bold;">AVANCE GLOBAL</p>
-                <p style="margin: 3px 0 0 0; font-size: 18px; font-weight: 800; color: #0B2545;">{avance_global:.1%}</p>
-            </div>
-            <div style="flex: 1; background-color: white; padding: 10px; border-radius: 8px; border-left: 4px solid #10B981; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);">
-                <p style="margin: 0; font-size: 11px; color: #64748B; font-weight: bold;">COMPLETAS</p>
-                <p style="margin: 3px 0 0 0; font-size: 18px; font-weight: 800; color: #0B2545;">{odpes_completas}</p>
-            </div>
-            <div style="flex: 1; background-color: white; padding: 10px; border-radius: 8px; border-left: 4px solid #F59E0B; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);">
-                <p style="margin: 0; font-size: 11px; color: #64748B; font-weight: bold;">PENDIENTES</p>
-                <p style="margin: 3px 0 0 0; font-size: 18px; font-weight: 800; color: #0B2545;">{odpes_pendientes}</p>
-            </div>
-        </div>
-        """,
-      unsafe_allow_html=True,
-  )
+  resumen_html = f"""<div style="display: flex; gap: 8px; margin-bottom: 10px;"><div style="flex: 1; background-color: white; padding: 10px; border-radius: 8px; border-left: 4px solid #0066CC; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);"><p style="margin: 0; font-size: 11px; color: #64748B; font-weight: bold;">AVANCE GLOBAL</p><p style="margin: 3px 0 0 0; font-size: 18px; font-weight: 800; color: #0B2545;">{avance_global:.1%}</p></div><div style="flex: 1; background-color: white; padding: 10px; border-radius: 8px; border-left: 4px solid #10B981; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);"><p style="margin: 0; font-size: 11px; color: #64748B; font-weight: bold;">COMPLETAS</p><p style="margin: 3px 0 0 0; font-size: 18px; font-weight: 800; color: #0B2545;">{odpes_completas}</p></div><div style="flex: 1; background-color: white; padding: 10px; border-radius: 8px; border-left: 4px solid #F59E0B; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);"><p style="margin: 0; font-size: 11px; color: #64748B; font-weight: bold;">PENDIENTES</p><p style="margin: 3px 0 0 0; font-size: 18px; font-weight: 800; color: #0B2545;">{odpes_pendientes}</p></div></div>"""
+  st.markdown(resumen_html, unsafe_allow_html=True)
 
-  # Notas Clave (Comentarios)
   comentarios_df = df[
       df["COMENTARIO"].notna()
       & (df["COMENTARIO"] != "")
@@ -191,14 +165,10 @@ with col_der:
   ]
   nota_texto = "Ninguna novedad registrada."
   if not comentarios_df.empty:
-    nota_texto = f"<b>{comentarios_df.iloc[0]['ODPE']}</b>: \"{comentarios_df.iloc[0]['COMENTARIO']}\""
+    nota_texto = (
+        f"<b>{comentarios_df.iloc[0]['ODPE']}</b>:"
+        f' "{comentarios_df.iloc[0]["COMENTARIO"]}"'
+    )
 
-  st.markdown(
-      f"""
-        <div style="background-color: white; padding: 12px; border-radius: 8px; border-left: 4px solid #64748B; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);">
-            <p style="margin: 0; font-size: 11px; color: #64748B; font-weight: bold;">NOTA CLAVE:</p>
-            <p style="margin: 3px 0 0 0; font-size: 13px; color: #334155; line-height: 1.3;">{nota_texto}</p>
-        </div>
-        """,
-      unsafe_allow_html=True,
-  )
+  nota_html = f"""<div style="background-color: white; padding: 12px; border-radius: 8px; border-left: 4px solid #64748B; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);"><p style="margin: 0; font-size: 11px; color: #64748B; font-weight: bold;">NOTA CLAVE:</p><p style="margin: 3px 0 0 0; font-size: 13px; color: #334155; line-height: 1.3;">{nota_texto}</p></div>"""
+  st.markdown(nota_html, unsafe_allow_html=True)
