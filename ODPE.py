@@ -2,15 +2,19 @@ import os
 import pandas as pd
 import streamlit as st
 
+# Configuración de la página (Ancho completo)
 st.set_page_config(
     page_title="Dashboard de Avances: Contratos de planta", layout="wide"
 )
 
-# Ruta exacta del archivo en Documentos
+# Ruta del archivo Excel (Funciona tanto localmente como en GitHub/Streamlit Cloud)
 archivo_excel = "avance.xlsx"
 
 if not os.path.exists(archivo_excel):
-  st.error(f"⚠️ No se encontró el archivo en: {archivo_excel}")
+  st.error(
+      f"⚠️ No se encontró el archivo '{archivo_excel}'. Asegúrate de subirlo a"
+      " la misma carpeta."
+  )
   st.stop()
 
 # Cargar el archivo Excel
@@ -24,7 +28,7 @@ df.columns = (
 )
 
 
-# Función flexible para encontrar las columnas clave
+# Función flexible para encontrar las columnas clave sin importar variaciones
 def encontrar_columna(posibles_nombres):
   for col in df.columns:
     for nombre in posibles_nombres:
@@ -45,7 +49,7 @@ if not col_odpe or not col_subidos or not col_meta:
   st.write("Columnas detectadas en tu archivo:", df.columns.tolist())
   st.stop()
 
-# Renombrar estandarizadamente
+# Renombrar estandarizadamente para trabajar sin fallos
 df = df.rename(
     columns={
         col_odpe: "ODPE",
@@ -77,10 +81,10 @@ df["AVANCE_CALC"] = df["SUBIDOS"] / df["META"]
 odpes_completas = len(df[df["AVANCE_CALC"] >= 1])
 odpes_pendientes = len(df[df["AVANCE_CALC"] < 1])
 
-# Ordenar de mayor a menor según el avance
+# Ordenar de mayor a menor según el porcentaje de avance
 df = df.sort_values(by="AVANCE_CALC", ascending=False).reset_index(drop=True)
 
-# Diseño de dos columnas (Izquierda: Barras | Derecha: Resumen Global)
+# Diseño de dos columnas (Izquierda: Barras de avance | Derecha: Resumen global)
 col_izq, col_der = st.columns([2, 1])
 
 with col_izq:
@@ -92,7 +96,7 @@ with col_izq:
     meta = row["META"]
     porcentaje = row["AVANCE_CALC"]
     if porcentaje > 1:
-      porcentaje = 1
+      porcentaje = 1  # Tope visual máximo en 100%
 
     texto_etiqueta = (
         f"{int(row['AVANCE_CALC']*100)}% (Subidos {int(subidos)}/{int(meta)})"
@@ -138,7 +142,7 @@ with col_der:
       unsafe_allow_html=True,
   )
 
-  # Notas Clave
+  # Notas Clave (Comentarios)
   comentarios_df = df[
       df["COMENTARIO"].notna()
       & (df["COMENTARIO"] != "")
