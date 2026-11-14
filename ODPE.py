@@ -7,7 +7,7 @@ st.set_page_config(
     page_title="Dashboard de Avances: Contratos de planta", layout="wide"
 )
 
-# Estilos CSS avanzados para hacer las barras gigantes, visibles y con diseño corporativo
+# Estilos CSS generales para el fondo y las tarjetas
 st.markdown(
     """
     <style>
@@ -24,28 +24,6 @@ st.markdown(
         color: white;
         margin-bottom: 25px;
         box-shadow: 0px 4px 10px rgba(11, 37, 69, 0.15);
-    }
-    
-    /* HACER LAS BARRAS DE PROGRESO GIGANTES Y MUY CLARAS */
-    .stProgress > div > div > div > div {
-        background: linear-gradient(90deg, #0066CC 0%, #0096FF 100%);
-        height: 28px !important;
-        border-radius: 14px;
-    }
-    .stProgress > div > div > div {
-        height: 28px !important;
-        border-radius: 14px;
-        background-color: #E2E8F0;
-        box-shadow: inset 0px 2px 4px rgba(0,0,0,0.06);
-    }
-
-    /* Estilo para los nombres de las ODPE */
-    .odpe-label {
-        font-size: 16px;
-        font-weight: 700;
-        color: #0B2545;
-        margin-bottom: 2px;
-        margin-top: 18px;
     }
     </style>
     """,
@@ -140,20 +118,35 @@ with col_izq:
 
   for index, row in df.iterrows():
     odpe_nombre = row["ODPE"]
-    subidos = row["SUBIDOS"]
-    meta = row["META"]
+    subidos = int(row["SUBIDOS"])
+    meta = int(row["META"])
     porcentaje_calc = row["AVANCE_CALC"]
-    
-    porcentaje_visual = porcentaje_calc
-    if porcentaje_visual > 1:
-      porcentaje_visual = 1
 
-    # Texto claro y destacado para cada barra
+    # Calcular porcentaje limitado al 100% para la barra visual
+    porcentaje_barra = porcentaje_calc * 100
+    if porcentaje_barra > 100:
+      porcentaje_barra = 100
+
     porcentaje_texto = int(porcentaje_calc * 100)
-    texto_etiqueta = f"{porcentaje_texto}% completado  —  ({int(subidos)} de {int(meta)} subidos)"
 
-    st.markdown(f'<div class="odpe-label">{odpe_nombre}</div>', unsafe_allow_html=True)
-    st.progress(float(porcentaje_visual), text=texto_etiqueta)
+    # Color dinámico de la barra (Verde si completa, Azul si está en proceso)
+    color_barra = "#10B981" if porcentaje_calc >= 1 else "#0066CC"
+
+    # Barra de progreso personalizada construida 100% con HTML robusto
+    st.markdown(
+        f"""
+        <div style="margin-bottom: 18px; background: white; padding: 12px 15px; border-radius: 10px; box-shadow: 0px 2px 5px rgba(0,0,0,0.05);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="font-weight: 700; color: #0B2545; font-size: 15px;">{odpe_nombre}</span>
+                <span style="font-weight: 700; color: #334155; font-size: 14px;">{porcentaje_texto}% ({subidos} / {meta})</span>
+            </div>
+            <div style="background-color: #E2E8F0; width: 100%; height: 22px; border-radius: 11px; overflow: hidden;">
+                <div style="background-color: {color_barra}; width: {porcentaje_barra}%; height: 100%; border-radius: 11px; transition: width 0.5s ease;"></div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 with col_der:
   st.markdown(
