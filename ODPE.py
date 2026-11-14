@@ -7,7 +7,7 @@ st.set_page_config(
 )
 
 # Ruta exacta del archivo en Documentos
-archivo_excel = r"C:\Users\oscar\Documents\avance.xlsx"
+archivo_excel = "avance.xlsx"
 
 if not os.path.exists(archivo_excel):
   st.error(f"⚠️ No se encontró el archivo en: {archivo_excel}")
