@@ -7,7 +7,7 @@ st.set_page_config(
     page_title="Dashboard de Avances: Contratos de planta", layout="wide"
 )
 
-# Estilos CSS generales para el fondo y las tarjetas
+# Estilos CSS para compactar al máximo la vista y eliminar espacios innecesarios
 st.markdown(
     """
     <style>
@@ -16,14 +16,20 @@ st.markdown(
         background-color: #F4F7FB;
     }
     
-    /* Encabezado principal */
+    /* Reducir márgenes globales y padding para ganar espacio vertical */
+    .block-container {
+        padding-top: 1.5rem;
+        padding-bottom: 1rem;
+    }
+    
+    /* Encabezado principal más compacto */
     .header-box {
         background: linear-gradient(135deg, #0B2545 0%, #134074 100%);
-        padding: 22px;
-        border-radius: 12px;
+        padding: 14px 20px;
+        border-radius: 10px;
         color: white;
-        margin-bottom: 25px;
-        box-shadow: 0px 4px 10px rgba(11, 37, 69, 0.15);
+        margin-bottom: 15px;
+        box-shadow: 0px 3px 8px rgba(11, 37, 69, 0.15);
     }
     </style>
     """,
@@ -87,8 +93,7 @@ if "COMENTARIO" not in df.columns:
 st.markdown(
     """
     <div class="header-box">
-        <h1 style="margin: 0; font-size: 26px; font-weight: 700;">📊 Dashboard de Avances: Contratos de Planta</h1>
-        <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.85;">Monitoreo en tiempo real de registros por ODPE</p>
+        <h1 style="margin: 0; font-size: 22px; font-weight: 700;">📊 Dashboard de Avances: Contratos de Planta</h1>
     </div>
     """,
     unsafe_allow_html=True,
@@ -107,14 +112,20 @@ odpes_pendientes = len(df[df["AVANCE_CALC"] < 1])
 df = df.sort_values(by="AVANCE_CALC", ascending=False).reset_index(drop=True)
 
 # Diseño de dos columnas
-col_izq, col_der = st.columns([2, 1], gap="large")
+col_izq, col_der = st.columns([1.8, 1], gap="medium")
 
 with col_izq:
   st.markdown(
-      "<h3 style='color: #0B2545; font-size: 20px; margin-top: 0;'>🚀 AVANCE"
-      " POR ODPE (%)</h3>",
+      "<h3 style='color: #0B2545; font-size: 16px; margin: 0 0 8px 0;'>🚀 AVANCE"
+      " POR ODPE</h3>",
       unsafe_allow_html=True,
   )
+
+  # Contenedor ultra compacto para todas las ODPE en formato lista limpia
+  html_lista_odpes = """
+    <div style="background: white; padding: 10px 14px; border-radius: 10px; box-shadow: 0px 2px 5px rgba(0,0,0,0.05);">
+    <table style="width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 13px;">
+    """
 
   for index, row in df.iterrows():
     odpe_nombre = row["ODPE"]
@@ -122,68 +133,51 @@ with col_izq:
     meta = int(row["META"])
     porcentaje_calc = row["AVANCE_CALC"]
 
-    # Calcular porcentaje limitado al 100% para la barra visual
     porcentaje_barra = porcentaje_calc * 100
     if porcentaje_barra > 100:
       porcentaje_barra = 100
 
     porcentaje_texto = int(porcentaje_calc * 100)
-
-    # Color dinámico de la barra (Verde si completa, Azul si está en proceso)
     color_barra = "#10B981" if porcentaje_calc >= 1 else "#0066CC"
 
-    # Barra de progreso personalizada construida 100% con HTML robusto
-    st.markdown(
-        f"""
-        <div style="margin-bottom: 18px; background: white; padding: 12px 15px; border-radius: 10px; box-shadow: 0px 2px 5px rgba(0,0,0,0.05);">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                <span style="font-weight: 700; color: #0B2545; font-size: 15px;">{odpe_nombre}</span>
-                <span style="font-weight: 700; color: #334155; font-size: 14px;">{porcentaje_texto}% ({subidos} / {meta})</span>
-            </div>
-            <div style="background-color: #E2E8F0; width: 100%; height: 22px; border-radius: 11px; overflow: hidden;">
-                <div style="background-color: {color_barra}; width: {porcentaje_barra}%; height: 100%; border-radius: 11px; transition: width 0.5s ease;"></div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    html_lista_odpes += f"""
+        <tr style="border-bottom: 1px solid #F1F5F9;">
+            <td style="padding: 6px 4px; font-weight: 700; color: #0B2545; width: 30%;">{odpe_nombre}</td>
+            <td style="padding: 6px 4px; width: 50%;">
+                <div style="background-color: #E2E8F0; width: 100%; height: 12px; border-radius: 6px; overflow: hidden;">
+                    <div style="background-color: {color_barra}; width: {porcentaje_barra}%; height: 100%; border-radius: 6px;"></div>
+                </div>
+            </td>
+            <td style="padding: 6px 4px; text-align: right; font-weight: 600; color: #334155; width: 20%;">{porcentaje_texto}% ({subidos}/{meta})</td>
+        </tr>
+        """
+
+  html_lista_odpes += "</table></div>"
+  st.markdown(html_lista_odpes, unsafe_allow_html=True)
 
 with col_der:
   st.markdown(
-      "<h3 style='color: #0B2545; font-size: 20px; margin-top: 0;'>📌 RESUMEN"
+      "<h3 style='color: #0B2545; font-size: 16px; margin: 0 0 8px 0;'>📌 RESUMEN"
       " GLOBAL</h3>",
       unsafe_allow_html=True,
   )
 
-  # Tarjeta 1: Avance Global
+  # Tarjetas de resumen compacto (en filas de 3 columnas pequeñas o tarjetas estilizadas)
   st.markdown(
       f"""
-        <div style="background-color: white; padding: 18px; border-radius: 12px; border-left: 6px solid #0066CC; box-shadow: 0px 3px 8px rgba(0,0,0,0.06); margin-bottom: 18px;">
-            <p style="margin: 0; font-size: 13px; color: #64748B; font-weight: bold;">AVANCE GLOBAL:</p>
-            <p style="margin: 5px 0 0 0; font-size: 28px; font-weight: 800; color: #0B2545;">{avance_global:.1%}</p>
-            <p style="margin: 3px 0 0 0; font-size: 14px; color: #475569;">{int(total_subidos)} subidos / {int(total_meta)} meta</p>
-        </div>
-        """,
-      unsafe_allow_html=True,
-  )
-
-  # Tarjeta 2: ODPEs Completas
-  st.markdown(
-      f"""
-        <div style="background-color: white; padding: 18px; border-radius: 12px; border-left: 6px solid #10B981; box-shadow: 0px 3px 8px rgba(0,0,0,0.06); margin-bottom: 18px;">
-            <p style="margin: 0; font-size: 13px; color: #64748B; font-weight: bold;">ODPEs COMPLETAS (100%):</p>
-            <p style="margin: 5px 0 0 0; font-size: 28px; font-weight: 800; color: #0B2545;">{odpes_completas}</p>
-        </div>
-        """,
-      unsafe_allow_html=True,
-  )
-
-  # Tarjeta 3: ODPEs Pendientes
-  st.markdown(
-      f"""
-        <div style="background-color: white; padding: 18px; border-radius: 12px; border-left: 6px solid #F59E0B; box-shadow: 0px 3px 8px rgba(0,0,0,0.06); margin-bottom: 18px;">
-            <p style="margin: 0; font-size: 13px; color: #64748B; font-weight: bold;">ODPEs PENDIENTES:</p>
-            <p style="margin: 5px 0 0 0; font-size: 28px; font-weight: 800; color: #0B2545;">{odpes_pendientes}</p>
+        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+            <div style="flex: 1; background-color: white; padding: 10px; border-radius: 8px; border-left: 4px solid #0066CC; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);">
+                <p style="margin: 0; font-size: 11px; color: #64748B; font-weight: bold;">AVANCE GLOBAL</p>
+                <p style="margin: 3px 0 0 0; font-size: 18px; font-weight: 800; color: #0B2545;">{avance_global:.1%}</p>
+            </div>
+            <div style="flex: 1; background-color: white; padding: 10px; border-radius: 8px; border-left: 4px solid #10B981; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);">
+                <p style="margin: 0; font-size: 11px; color: #64748B; font-weight: bold;">COMPLETAS</p>
+                <p style="margin: 3px 0 0 0; font-size: 18px; font-weight: 800; color: #0B2545;">{odpes_completas}</p>
+            </div>
+            <div style="flex: 1; background-color: white; padding: 10px; border-radius: 8px; border-left: 4px solid #F59E0B; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);">
+                <p style="margin: 0; font-size: 11px; color: #64748B; font-weight: bold;">PENDIENTES</p>
+                <p style="margin: 3px 0 0 0; font-size: 18px; font-weight: 800; color: #0B2545;">{odpes_pendientes}</p>
+            </div>
         </div>
         """,
       unsafe_allow_html=True,
@@ -201,9 +195,9 @@ with col_der:
 
   st.markdown(
       f"""
-        <div style="background-color: white; padding: 18px; border-radius: 12px; border-left: 6px solid #64748B; box-shadow: 0px 3px 8px rgba(0,0,0,0.06);">
-            <p style="margin: 0; font-size: 13px; color: #64748B; font-weight: bold;">NOTAS CLAVE:</p>
-            <p style="margin: 5px 0 0 0; font-size: 14px; color: #334155; line-height: 1.4;">{nota_texto}</p>
+        <div style="background-color: white; padding: 12px; border-radius: 8px; border-left: 4px solid #64748B; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);">
+            <p style="margin: 0; font-size: 11px; color: #64748B; font-weight: bold;">NOTA CLAVE:</p>
+            <p style="margin: 3px 0 0 0; font-size: 13px; color: #334155; line-height: 1.3;">{nota_texto}</p>
         </div>
         """,
       unsafe_allow_html=True,
