@@ -158,17 +158,27 @@ with col_der:
   resumen_html = f"""<div style="display: flex; gap: 8px; margin-bottom: 10px;"><div style="flex: 1; background-color: white; padding: 10px; border-radius: 8px; border-left: 4px solid #0066CC; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);"><p style="margin: 0; font-size: 11px; color: #64748B; font-weight: bold;">AVANCE GLOBAL</p><p style="margin: 3px 0 0 0; font-size: 18px; font-weight: 800; color: #0B2545;">{avance_global:.1%}</p></div><div style="flex: 1; background-color: white; padding: 10px; border-radius: 8px; border-left: 4px solid #10B981; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);"><p style="margin: 0; font-size: 11px; color: #64748B; font-weight: bold;">COMPLETAS</p><p style="margin: 3px 0 0 0; font-size: 18px; font-weight: 800; color: #0B2545;">{odpes_completas}</p></div><div style="flex: 1; background-color: white; padding: 10px; border-radius: 8px; border-left: 4px solid #F59E0B; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);"><p style="margin: 0; font-size: 11px; color: #64748B; font-weight: bold;">PENDIENTES</p><p style="margin: 3px 0 0 0; font-size: 18px; font-weight: 800; color: #0B2545;">{odpes_pendientes}</p></div></div>"""
   st.markdown(resumen_html, unsafe_allow_html=True)
 
+  # Filtrar comentarios reales válidos
   comentarios_df = df[
       df["COMENTARIO"].notna()
       & (df["COMENTARIO"] != "")
       & (df["COMENTARIO"].astype(str).str.lower() != "nan")
   ]
-  nota_texto = "Ninguna novedad registrada."
-  if not comentarios_df.empty:
-    nota_texto = (
-        f"<b>{comentarios_df.iloc[0]['ODPE']}</b>:"
-        f' "{comentarios_df.iloc[0]["COMENTARIO"]}"'
-    )
 
-  nota_html = f"""<div style="background-color: white; padding: 12px; border-radius: 8px; border-left: 4px solid #64748B; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);"><p style="margin: 0; font-size: 11px; color: #64748B; font-weight: bold;">NOTA CLAVE:</p><p style="margin: 3px 0 0 0; font-size: 13px; color: #334155; line-height: 1.3;">{nota_texto}</p></div>"""
+  # Generar la lista dinámica de todos los comentarios encontrados
+  lista_comentarios_html = ""
+  if comentarios_df.empty:
+    lista_comentarios_html = (
+        '<p style="margin: 0; font-size: 13px; color: #64748B;">Ninguna'
+        " novedad registrada.</p>"
+    )
+  else:
+    for _, row in comentarios_df.iterrows():
+      lista_comentarios_html += (
+          f'<div style="margin-bottom: 6px; border-bottom: 1px solid #F1F5F9;'
+          f' padding-bottom: 4px;"><b style="color: #0B2545;">{row["ODPE"]}:</b>'
+          f' <span style="color: #334155;">"{row["COMENTARIO"]}"</span></div>'
+      )
+
+  nota_html = f"""<div style="background-color: white; padding: 12px; border-radius: 8px; border-left: 4px solid #64748B; box-shadow: 0px 2px 4px rgba(0,0,0,0.04); max-height: 180px; overflow-y: auto;"><p style="margin: 0 0 6px 0; font-size: 11px; color: #64748B; font-weight: bold;">NOTAS Y COMENTARIOS:</p><div style="font-size: 12px; line-height: 1.3;">{lista_comentarios_html}</div></div>"""
   st.markdown(nota_html, unsafe_allow_html=True)
