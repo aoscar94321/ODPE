@@ -4,7 +4,7 @@ import streamlit as st
 
 # Configuración de la página (Ancho completo)
 st.set_page_config(
-    page_title="Dashboard de Avances: Contratos de planta", layout="wide"
+    page_title="Dashboard de Avances Acervo", layout="wide"
 )
 
 # Estilos CSS compactos
